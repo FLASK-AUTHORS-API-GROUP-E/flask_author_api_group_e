@@ -29,7 +29,7 @@ def create_app():
 
 
 
-    
+
     # Index Route
     @app.route('/')
     def index():

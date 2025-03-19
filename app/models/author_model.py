@@ -16,6 +16,7 @@ class Author(db.Model) :
     location = db.Column(db.String(100),nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now)
+    books = db.relationship('Book', backref='author', lazy=True)
     # book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     # company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
     # book_id = db.relationship('Book', backref='author', lazy=True)

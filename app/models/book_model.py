@@ -15,6 +15,8 @@ class Book(db.Model) :
     publication_date =db.Column(db.String(90),nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime,onupdate=datetime.now)
+    author_id = db.Column(db.Integer, db.ForeignKey('authors.author_id'), nullable=False)
+    author = db.relationship('Author', backref='books', lazy=True)
     # author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)# foreign key
     # company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)# foreign key
     # author = db.relationship('Author', backref='books', lazy=True) # relationship
@@ -31,9 +33,8 @@ class Book(db.Model) :
     # company = db.relationship('Company', backref='books', lazy=True)# relationship
 
 
-class Book :
-    def __init__(self,book_id, name,title, price, description, image, no_of_pages, publication_date,created_at,updated_at):
-         self.book_id = book_id
+
+    def __init__(self, name,title, price, description, image, no_of_pages, publication_date):
          self.name = name
          self.title = title
          self.description = description
@@ -41,8 +42,7 @@ class Book :
          self.no_of_pages = no_of_pages
          self.price = price
          self.publication_date = publication_date
-         self.created_at = created_at
-         self.updated_at = updated_at
+        
         
 
     

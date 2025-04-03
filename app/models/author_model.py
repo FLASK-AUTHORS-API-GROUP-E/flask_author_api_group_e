@@ -15,15 +15,15 @@ class Author(db.Model) :
     biography = db.Column(db.String(1000),nullable=False)
     location = db.Column(db.String(100),nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
-    updated_at = db.Column(db.DateTime, default=datetime.now)
-    books = db.relationship('Book', backref='author', lazy=True)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.now)
+
     # book_id = db.Column(db.Integer, db.ForeignKey('book.id'), nullable=False)
     # company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
     # book_id = db.relationship('Book', backref='author', lazy=True)
     # company_id = db.relationship('Company', backref='author', lazy=True)
                            
     
-    def __init__(self, first_name , last_name,email , contact,password , specialisation,biography,location,created_at,updated_at):
+    def __init__(self, first_name , last_name,email , contact,password , specialisation,biography,location):
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
@@ -32,8 +32,7 @@ class Author(db.Model) :
         self.specialisation = specialisation
         self.biography = biography
         self.location = location
-        self.created_at = created_at
-        self.updated_at = updated_at
+        
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"

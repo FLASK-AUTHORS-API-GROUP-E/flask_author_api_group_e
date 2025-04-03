@@ -1,6 +1,6 @@
 from flask import Flask
 from app.extensions import db,migrate, jwt
-from app.controllers.Auth.Auth_controller import auth
+from app.controllers.Auth.auth_controller import auth
 
 
 
@@ -22,6 +22,7 @@ def create_app():
     from app.models.author_model import Author
     from app.models.book_model import Book
     from app.models.company_model import Company
+
     
 
     # Registering blueprints
@@ -36,4 +37,5 @@ def create_app():
         return "Welcome to the API"
 
     return app
+
 

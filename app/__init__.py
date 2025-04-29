@@ -12,7 +12,11 @@ def create_app():
     
     # Initialize extensions
     db.init_app(app)
+<<<<<<< HEAD
     migrate.init_app(app, db)  # Ensure `migrate` is defined before use
+=======
+    migrate.init_app(app, db)  #  Ensure `migrate` is defined before use
+>>>>>>> 0bddf09e896066b30e836f868c1315e2080b746e
     jwt.init_app(app)  # Initialize JWT
 
     # Importing and registering the models

@@ -153,7 +153,7 @@ def updateUserDetails():
         try:
            current_user = get_jwt_identity()
            loggedInUser = user.query.filter_by(id=current_user).first()
-           #Get uder by id
+           #Get user by id
            user = User.query.filter_by(id=id).first()
 
            if not user:

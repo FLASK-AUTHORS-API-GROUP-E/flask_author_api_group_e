@@ -1,33 +1,30 @@
 from flask import Flask
-from app.extensions import db,migrate,jwt
+from app.extensions import db, migrate, jwt
 from app.controllers.auth.auth_controller import auth
 from app.controllers.users.user_controller import users
 from app.controllers.companies.companies_controller import companies
-
+from app.controllers.books.book_controller import books
 
 def create_app():
-
     app = Flask(__name__)
     app.config.from_object('config.Config')
-    
+
     # Initialize extensions
     db.init_app(app)
-<<<<<<< HEAD
     migrate.init_app(app, db)  # Ensure `migrate` is defined before use
-=======
-    migrate.init_app(app, db)  #  Ensure `migrate` is defined before use
->>>>>>> 0bddf09e896066b30e836f868c1315e2080b746e
-    jwt.init_app(app)  # Initialize JWT
+    jwt.init_app(app)          # Initialize JWT
 
-    # Importing and registering the models
+    # Import models to ensure they are registered with SQLAlchemy
     from app.models.users import User
     from app.models.companies import Company
     from app.models.books import Book
+    from app.models.authors import Author
 
-    #Registering blueprints
+    # Register blueprints
     app.register_blueprint(auth)
     app.register_blueprint(users)
     app.register_blueprint(companies)
+    app.register_blueprint(books)
 
     @app.route('/')
     def home():

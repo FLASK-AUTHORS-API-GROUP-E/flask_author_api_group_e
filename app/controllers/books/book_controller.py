@@ -6,8 +6,8 @@ from app.status_codes import (
 )
 import validators
 from app.models.companies import Company
-from app.models.books import Book
 from app.models.users import User
+from app.models.books import Book
 from app.extensions import db
 from flask_jwt_extended import (
     create_access_token, create_refresh_token, jwt_required,
@@ -113,30 +113,36 @@ def createNewBook():
 @jwt_required()
 def getAllBooks():
     try:
-        allBooks = Book.query.all()
-        booksData = []
-        for book in allBooks:
-            booksData.append({
+        all_books = Book.query.all()
+        books_data = []
+        for book in all_books:
+            books_info = {
                 'id': book.id,
                 'title': book.title,
+                'price':book.price,
+                'price_unit':book.price_unit,
                 'description': book.description,
-                'author': book.author,
-                'user': {
-                    'first_name': book.user.first_name,
-                    'last_name': book.user.last_name,
-                    'username': book.user.get_full_name(),
-                    'email': book.user.email,
-                    'contact': book.user.contact,
-                    'user_type': book.user.user_type,
-                    'biography': book.user.biography,
-                    'created_at': book.user.created_at
+                'pages': book.pages,
+                'isbn': book.isbn,
+                'genre':book.genre,
+                'publication_date':book.publication_date,
+                'image':book.image,
+                'created_at':book.created_at,
+               
+                'company': {
+                    'id': book.company.id,
+                    'name': book.company.name,
+                    'description': book.company.description,
+                    'origin': book.company.origin,
+                    'created_at': book.company.created_at
                 },
-                'created_at': book.created_at
-            })
+              
+            }
+            books_data.append(books_info)
         return jsonify({
             "message": "All books retrieved successfully.",
-            "total_books": len(booksData),
-            "books": booksData
+            "total_books": len(books_data),
+            "books": books_data
         }), HTTP_200_OK
 
     except Exception as e:
@@ -144,7 +150,7 @@ def getAllBooks():
 
 
 # Get a book by ID
-@books.route('/<int:id>', methods=['GET'])
+@books.route('/book<int:id>', methods=['GET'])
 @jwt_required()
 def getBookById(id):
     try:
@@ -153,13 +159,21 @@ def getBookById(id):
             return jsonify({"error": "Book not found"}), HTTP_404_NOT_FOUND
 
         return jsonify({
-            "message": "Book retrieved successfully",
+            "message": "Book details retrieved successfully",
             "book": {
                 'id': book.id,
                 'title': book.title,
+                'price':book.price,
+                'price_unit':book.price_unit,
                 'description': book.description,
+                'pages': book.pages,
+                'isbn': book.isbn,
+                'genre':book.genre,
+                'publication_date':book.publication_date,
+                'image':book.image,
+                'created_at':book.created_at,
                 'author': book.author,
-                'user': {
+                'author': {
                     'first_name': book.user.first_name,
                     'last_name': book.user.last_name,
                     'username': book.user.get_full_name(),
@@ -169,7 +183,13 @@ def getBookById(id):
                     'biography': book.user.biography,
                     'created_at': book.user.created_at
                 },
-                'created_at': book.created_at
+               'company':{
+                    'id': book.company.id,
+                    'name': book.company.name,
+                    'description': book.company.description,
+                    'origin': book.company.origin,
+                    'created_at': book.company.created_at
+               }
             }
         }), HTTP_200_OK
 
@@ -181,26 +201,60 @@ def getBookById(id):
 @books.route('/edit/<int:id>', methods=['PUT', 'PATCH'])
 @jwt_required()
 def updateBook(id):
+    from flask import request, jsonify
+from flask_jwt_extended import get_jwt_identity
+from app.models import User, Book, db  # adjust import paths as needed
+from app.status_codes import HTTP_200_OK, HTTP_403_FORBIDDEN, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT, HTTP_500_INTERNAL_SERVER_ERROR
+
+@books.route('/books/<int:id>', methods=['PUT'])
+@jwt_required()
+def update_book(id):
     try:
-        current_user = get_jwt_identity()
-        loggedInUser = User.query.filter_by(id=current_user).first()
+        current_user_id = get_jwt_identity()
+        loggedInUser = User.query.filter_by(id=current_user_id).first()
 
+        # Get book by ID
         book = Book.query.filter_by(id=id).first()
-
         if not book:
             return jsonify({"error": "Book not found"}), HTTP_404_NOT_FOUND
 
-        if loggedInUser.user_type != 'admin' and book.user_id != current_user:
-            return jsonify({"error": "You are not authorized to update this book"}), HTTP_403_FORBIDDEN
+        if loggedInUser.user_type != 'admin' and book.user_id != current_user_id:
+            return jsonify({"error": "You are not authorized to update this book details"}), HTTP_403_FORBIDDEN
 
+        # Extract request data
         data = request.get_json()
-        title = data.get('title', book.title)
-        description = data.get('description', book.description)
-        author = data.get('author', book.author)
 
+        title = data.get('title', book.title)
+        price = data.get('price', book.price)
+        price_unit = data.get('price_unit', book.price_unit)
+        description = data.get('description', book.description)
+        pages = data.get('pages', book.pages)
+        isbn = data.get('isbn', book.isbn)
+        genre = data.get('genre', book.genre)
+        publication_date = data.get('publication_date', book.publication_date)
+        image = data.get('image', book.image)
+        created_at = data.get('created_at', book.created_at)
+
+        # Uniqueness checks
+        if isbn != book.isbn and Book.query.filter_by(isbn=isbn).first():
+            return jsonify({"error": "ISBN already in use"}), HTTP_409_CONFLICT
+
+        if title != book.title and Book.query.filter_by(title=title, user_id=current_user_id.id).first():
+            return jsonify({"error": "Book title already in use"}), HTTP_409_CONFLICT
+
+        # Update book attributes
         book.title = title
+        book.price = price
+        book.price_unit = price_unit
         book.description = description
-        book.author = author
+        book.genre = genre
+        book.publication_date = publication_date
+        book.isbn = isbn
+        book.image = image
+        book.pages = pages
+        book.created_at = created_at
+        # Make sure company_id is retrieved from data or context
+        book.company_id = data.get('company_id', book.company_id)
 
         db.session.commit()
 
@@ -209,9 +263,16 @@ def updateBook(id):
             "book": {
                 'id': book.id,
                 'title': book.title,
+                'price': book.price,
+                'price_unit': book.price_unit,
                 'description': book.description,
-                'author': book.author,
-                'user': {
+                'pages': book.pages,
+                'isbn': book.isbn,
+                'genre': book.genre,
+                'publication_date': book.publication_date,
+                'image': book.image,
+                'created_at': book.created_at,
+                'author': {
                     'first_name': book.user.first_name,
                     'last_name': book.user.last_name,
                     'username': book.user.get_full_name(),
@@ -221,13 +282,18 @@ def updateBook(id):
                     'biography': book.user.biography,
                     'created_at': book.user.created_at
                 },
-                'created_at': book.created_at
+                'company': {
+                    'id': book.company.id,
+                    'name': book.company.name,
+                    'description': book.company.description,
+                    'origin': book.company.origin,
+                    'created_at': book.company.created_at
+                }
             }
         }), HTTP_200_OK
 
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_500_INTERNAL_SERVER_ERROR
-
 
 # Delete a book
 @books.route('/delete/<int:id>', methods=['DELETE'])
@@ -236,17 +302,20 @@ def deleteBook(id):
     try:
         current_user = get_jwt_identity()
         loggedInUser = User.query.filter_by(id=current_user).first()
-
+     #Get book by id
         book = Book.query.filter_by(id=id).first()
 
         if not book:
             return jsonify({"error": "Book not found"}), HTTP_404_NOT_FOUND
 
-        if loggedInUser.user_type != 'admin' and book.user_id != current_user:
+        elif loggedInUser.user_type != 'admin' and book.user_id != current_user:
             return jsonify({"error": "You are not authorized to delete this book"}), HTTP_403_FORBIDDEN
-
-        db.session.delete(book)
-        db.session.commit()
+        
+        else:
+            #Delete associated books
+       
+         db.session.delete(book)
+         db.session.commit()
 
         return jsonify({
             "message": "Book has been deleted successfully"

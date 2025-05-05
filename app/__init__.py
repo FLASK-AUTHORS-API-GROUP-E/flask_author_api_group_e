@@ -4,6 +4,7 @@ from app.controllers.auth.auth_controller import auth
 from app.controllers.users.user_controller import users
 from app.controllers.companies.companies_controller import companies
 from app.controllers.books.book_controller import books
+from app.controllers.authors.authors_controller import authors
 
 def create_app():
     app = Flask(__name__)
@@ -19,6 +20,9 @@ def create_app():
     from app.models.companies import Company
     from app.models.books import Book
     from app.models.authors import Author
+  
+
+
 
     # Register blueprints
     app.register_blueprint(auth)

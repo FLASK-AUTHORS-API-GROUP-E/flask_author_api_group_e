@@ -139,5 +139,5 @@ def refresh():
     access_token = create_access_token(identity=identity)
     return jsonify({'access_token':access_token})
 
-# Retrieving all users
+
 
